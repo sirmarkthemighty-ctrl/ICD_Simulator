@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- App styles --- */
+html, body { margin: 0; background: #f1f5f9; }
+html.dark, html.dark body { background: #0b1220; color-scheme: dark; }
+
+/* Embedded frame clipping support */
+.fixed.bottom-0 { bottom: var(--clip-bottom, 0px); }
+.fixed.inset-0 { top: var(--clip-top, 0px); bottom: var(--clip-bottom, 0px); }
+.fixed.top-4 { top: calc(1rem + var(--clip-top, 0px)); }
+html.frame-clipped .fixed.inset-0 > * { max-height: 100%; }
+#main-app-container { padding-bottom: calc(5rem + var(--clip-pad, 0px)); }
+
+/* Horizontal filter rails scroll without a visible scrollbar */
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* --- tailwindcss-animate equivalents --- */
+@keyframes tw-enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+               scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), 1);
+  }
+}
+.animate-in {
+  animation-name: tw-enter;
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+.animate-in.duration-200 { animation-duration: 200ms; }
+.animate-in.duration-300 { animation-duration: 300ms; }
+
+.fade-in { --tw-enter-opacity: 0; }
+.zoom-in-95 { --tw-enter-scale: 0.95; }
+.slide-in-from-top-2 { --tw-enter-translate-y: -0.5rem; }
+.slide-in-from-bottom-2 { --tw-enter-translate-y: 0.5rem; }
+.slide-in-from-bottom-4 { --tw-enter-translate-y: 1rem; }
+
+/* Prevent default browser focus outline / black box on SVG interactive elements */
+svg,
+svg *,
+svg *:focus,
+svg *:focus-visible,
+svg *:active,
+svg [role="button"]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Bottle bubble rise & surface ripple animations */
+@keyframes icd-bubble-rise {
+  0% { transform: translate(0px, 0px) scale(0.75); opacity: 0; }
+  12% { opacity: 0.95; }
+  50% { transform: translate(var(--wobble-x, 3px), calc(var(--rise-y, -32px) * 0.5)) scale(1); opacity: 0.9; }
+  88% { opacity: 0.85; }
+  100% { transform: translate(calc(var(--wobble-x, 3px) * -0.5), var(--rise-y, -32px)) scale(1.12); opacity: 0; }
+}
+@keyframes icd-ripple {
+  0% { transform: scaleX(0.4); opacity: 0.75; }
+  100% { transform: scaleX(1.35); opacity: 0; }
+}
+.icd-bubble {
+  animation: icd-bubble-rise 1.25s ease-in infinite;
+  will-change: transform, opacity;
+}
+.icd-bubble-fast {
+  animation: icd-bubble-rise 0.62s ease-in infinite;
+  will-change: transform, opacity;
+}
+.icd-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: icd-ripple 0.9s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in { animation: none; }
+}
