@@ -130,6 +130,10 @@ function computeIcdPhysics({
   const pCrack = obstructed ? null : +(pOverhead + hSealEffective + hydroBackPressure).toFixed(1);
   const netDrive = pCrack === null ? 0 : +(pPleural - pCrack).toFixed(1);
 
+  // Air only crosses the seal when something supplies it: a leak fault, or positive pleural pressure
+  // (cough, Valsalva, ventilator) pushing residual air out. Suction on a quiet, sealed chest moves no air.
+  const airAvailable = pPleural > 0;
+
   // Water seal bubbling state
   let waterSealBubbling = 'none'; // 'none' | 'intermittent' | 'continuous'
   if (sealIntact && !obstructed) {
@@ -137,7 +141,7 @@ function computeIcdPhysics({
       waterSealBubbling = clampPos === 'distal' ? 'none' : 'continuous';
     } else if (fault === 'air_leak_bpf') {
       waterSealBubbling = clampPos === 'none' ? 'continuous' : 'none';
-    } else if (clampPos === 'none' && netDrive > 0) {
+    } else if (clampPos === 'none' && netDrive > 0 && airAvailable) {
       waterSealBubbling = 'intermittent';
     }
   }
@@ -157,7 +161,7 @@ function computeIcdPhysics({
   }
 
   // Net effective suction pressure in 3-bottle or digital dry system
-  const netEffectiveSuction = (system === '3b' || system === 'dry') && !ventBlocked && wallSuctionMode !== 'off_open'
+  const netEffectiveSuction = (system === 'dry' || (system === '3b' && !ventBlocked && wallSuctionMode !== 'off_open'))
     ? +(pOverhead + hSealEffective).toFixed(1)
     : null;
 
@@ -168,7 +172,7 @@ function computeIcdPhysics({
       airLeakFlow = clampPos === 'distal' ? 0 : 520;
     } else if (fault === 'air_leak_bpf') {
       airLeakFlow = clampPos === 'none' ? 360 : 0;
-    } else if (clampPos === 'none' && netDrive > 0) {
+    } else if (clampPos === 'none' && netDrive > 0 && airAvailable) {
       airLeakFlow = Math.round(netDrive * 36);
     }
   }

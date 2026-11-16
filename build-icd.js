@@ -29,3 +29,17 @@ const VENDOR = ['react/umd/react.production.min.js', 'react-dom/umd/react-dom.pr
   fs.writeFileSync(OUT, html);
   console.log(`Built ${OUT}: ${(html.length / 1024).toFixed(1)} KB`);
 })();
+
+// Artifact variant: the Artifact tool adds its own doctype/html/head/body, so strip ours.
+// Run after the build above has written icd-simulator.html (a second tick, so ordering is safe).
+setTimeout(() => {
+  let h = fs.readFileSync(OUT, 'utf8');
+  const bodyCls = (h.match(/<body class="([^"]*)"/) || [])[1] || '';
+  h = h.replace(/<!DOCTYPE html>\s*<html[^>]*>\s*<head>/i, '')
+    .replace(/<meta charset[^>]*>\s*<meta name="viewport"[^>]*>\s*/i, '')
+    .replace(/<\/head>\s*<body[^>]*>/i, `<style>body{background:#f1f5f9}html.dark body{background:#0b1220}</style>\n<div class="${bodyCls}">`)
+    .replace(/<title>[^<]*<\/title>/, '<title>Chest Drain Simulator</title>')
+    .replace(/<\/body>\s*<\/html>\s*$/i, '</div>\n');
+  fs.writeFileSync(OUT.replace(/\.html$/, '.artifact.html'), h);
+  console.log('Built artifact variant');
+}, 0);

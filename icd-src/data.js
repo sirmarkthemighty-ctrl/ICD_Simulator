@@ -1,8 +1,20 @@
 // Intercostal Drainage (ICD) Simulator — Clinical Data, Physics Presets, Troubleshooting & Bilingual Dictionary
 
-const APP_VERSION = 'v1.6.1';
+const APP_VERSION = 'v1.6.2';
 
 const CHANGELOG = [
+  {
+    version: 'v1.6.2',
+    date: '2026-11-16',
+    en: [
+      'Physics audit: suction systems (3-bottle, digital) no longer show an air leak on a sealed, quietly breathing chest. Air now crosses the seal only with a leak fault or positive pleural pressure (cough, Valsalva, ventilator). The Digital Post-Op scenario now reads <30 mL/min as its text states, instead of 324–504 mL/min.',
+      'Digital unit: effective suction now shows regardless of the wall-suction setting left over from another system.',
+    ],
+    th: [
+      'ตรวจสอบฟิสิกส์: ระบบที่ใช้แรงดูด (3 ขวด, ดิจิทัล) ไม่แสดงลมรั่วเมื่อช่องอกปิดสนิทและหายใจสงบอีกต่อไป ลมจะผ่าน water seal เฉพาะเมื่อมีจุดรั่วหรือความดันช่องเยื่อหุ้มปอดเป็นบวก (ไอ, เบ่ง, เครื่องช่วยหายใจ) โหมดดิจิทัลหลังผ่าตัดแสดง <30 มล./นาทีตามคำอธิบาย แทนที่จะเป็น 324–504 มล./นาที',
+      'เครื่องดิจิทัล: แสดงแรงดูดสุทธิโดยไม่ขึ้นกับค่าแรงดูดผนังที่ค้างจากระบบอื่น',
+    ],
+  },
   {
     version: 'v1.6.1',
     date: '2026-11-16',
