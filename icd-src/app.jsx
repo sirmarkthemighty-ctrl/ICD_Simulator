@@ -757,6 +757,12 @@ const DeltaPill = ({ now, base, unit = '', pressureUnit = 'cmh2o' }) => {
 };
 
 // --- Animated Interactive Bottle Schematic SVG ---
+// Left lung outline in its own local coords (origin at the hilum)
+const LUNG = 'M -15.6 -34 C -4 -36 10 -30 14 -22 C 20 -14 23 -4 26 6 C 29 14 31 20 31 26 C 26 28 14 28 6 27 C 2 27 -1 26 -3 25 C -4 22 -6 19 -4.5 17 C -8 16 -13 15 -18 12 C -22 8 -24 0 -24 -8 C -24 -16 -23 -24 -20 -30 C -19 -33 -17 -34 -15.6 -34 Z';
+
+// Thoracic cavity outline (local coords of the patient panel)
+const CAVITY = 'M 24 30 Q 58 22 90 30 L 92 100 Q 58 110 20 102 Q 12 66 24 30 Z';
+
 const IcdBottleSvg = ({
   system,
   hSeal,
@@ -920,6 +926,21 @@ const IcdBottleSvg = ({
             <stop offset="92%" stopColor="#ffffff" stopOpacity={dark ? "0.08" : "0.40"} />
             <stop offset="100%" stopColor="#ffffff" stopOpacity={dark ? "0.02" : "0.15"} />
           </linearGradient>
+          <radialGradient id="icd-lung-grad" cx="0.55" cy="0.4" r="0.85">
+            <stop offset="0%" stopColor={dark ? '#e9bfae' : '#f6d8ca'} />
+            <stop offset="65%" stopColor={dark ? '#d49a8b' : '#e8b3a2'} />
+            <stop offset="100%" stopColor={dark ? '#a8665f' : '#cf8b7e'} />
+          </radialGradient>
+          <clipPath id="icd-lung-clip"><path d={LUNG} /></clipPath>
+          <linearGradient id="icd-diaphragm-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fb7185" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#9f1239" stopOpacity="0.85" />
+          </linearGradient>
+          <linearGradient id="icd-effusion-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#b45309" stopOpacity="0.8" />
+          </linearGradient>
+          <clipPath id="icd-cavity-clip"><path d={CAVITY} /></clipPath>
         </defs>
 
         {/* Patient Thorax Panel */}
@@ -928,26 +949,42 @@ const IcdBottleSvg = ({
           <text x="58" y="16" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={labelText}>
             {isTh ? 'ช่องเยื่อหุ้มปอด' : 'PLEURAL SPACE'}
           </text>
-          {/* Ribcage / Pleural Cavity */}
-          <path d="M 22 28 Q 58 20 94 28 L 100 106 Q 58 114 16 106 Z" fill={dark ? '#1e293b' : '#e2e8f0'} stroke={glassStroke} strokeWidth="1.2" />
-          
-          {/* Living Diaphragmatic Muscle Dome (moves in sync with pleural pressure) */}
+          {/* Chest wall (skin, fat, muscle) down the lateral side where the tube enters */}
+          <path d="M 90 28 Q 100 30 106 34 L 108 100 Q 100 106 92 104 Z" fill={dark ? '#7c2d12' : '#fdba74'} fillOpacity={dark ? 0.35 : 0.55} stroke={dark ? '#9a3412' : '#ea580c'} strokeOpacity="0.6" strokeWidth="0.8" />
+          <path d="M 106 34 L 108 100" stroke={dark ? '#fdba74' : '#c2410c'} strokeOpacity="0.8" strokeWidth="1.6" strokeLinecap="round" />
+          {/* Thoracic cavity lined by the parietal pleura */}
+          <path d={CAVITY} fill={dark ? '#0b1220' : '#f8fafc'} stroke={dark ? '#fda4af' : '#e11d48'} strokeOpacity="0.55" strokeWidth="1.4" />
+          {/* Posterior ribs seen faintly through the chest, like a radiograph */}
+          <g clipPath="url(#icd-cavity-clip)" fill="none" stroke={dark ? '#e2e8f0' : '#64748b'} strokeOpacity={dark ? 0.16 : 0.22} strokeWidth="3.2" strokeLinecap="round">
+            {[34, 50, 66, 82, 98].map((y) => (<path key={y} d={`M 20 ${y - 12} Q 52 ${y - 14} 94 ${y + 4}`} />))}
+          </g>
+          {/* Spine edge and mediastinum on the medial side */}
+          <path d="M 24 30 Q 14 66 20 102" fill="none" stroke={dark ? '#cbd5e1' : '#94a3b8'} strokeOpacity="0.6" strokeWidth="3" strokeLinecap="round" />
+
+          {/* Effusion fluid pooling on the diaphragm, with a curved surface */}
+          {hFluid > 0 && (() => {
+            const yF = 104 - Math.min(24, hFluid * 2.5);
+            return (
+              <g clipPath="url(#icd-cavity-clip)">
+                <path d={`M 18 ${yF - 1.5} Q 24 ${yF - 3.5} 28 ${yF} Q 58 ${yF + 1.5} 88 ${yF} Q 92 ${yF - 3.5} 96 ${yF - 1.5} L 96 118 L 18 118 Z`} fill="url(#icd-effusion-grad)" />
+                <path d={`M 28 ${yF} Q 58 ${yF + 1.5} 88 ${yF}`} fill="none" stroke="#fde68a" strokeOpacity="0.6" strokeWidth="0.8" />
+              </g>
+            );
+          })()}
+
+          {/* Living Diaphragmatic Muscle Dome (flattens on inspiration, domes on expiration) */}
           {(() => {
-            const diaphragmY = 106 + Math.max(-6, Math.min(8, -pPleural * 0.6));
+            const shift = Math.max(-6, Math.min(8, -pPleural * 0.6));
+            const ctrl = 86 + shift;
             return (
               <g>
-                <path d={`M 18 106 Q 58 ${diaphragmY} 98 106 L 98 114 Q 58 116 18 114 Z`} fill="#f43f5e" fillOpacity="0.45" stroke="#e11d48" strokeWidth="1" />
-                <text x="58" y={diaphragmY + 6.5} textAnchor="middle" fontSize="5.5" fontWeight="800" fill="#fda4af">
+                <path d={`M 14 116 L 14 106 Q 58 ${ctrl} 100 106 L 100 116 Z`} fill="url(#icd-diaphragm-grad)" stroke="#e11d48" strokeOpacity="0.8" strokeWidth="1" />
+                <text x="58" y="113" textAnchor="middle" fontSize="5.5" fontWeight="800" fill={dark ? '#fecdd3' : '#9f1239'}>
                   {isTh ? 'กะบังลม' : 'DIAPHRAGM'}
                 </text>
               </g>
             );
           })()}
-
-          {/* Effusion Fluid Pooling Layer inside hemithorax (when fluid accumulates) */}
-          {hFluid > 0 && (
-            <path d={`M 22 ${106 - Math.min(24, hFluid * 2.5)} Q 58 ${106 + Math.max(-6, Math.min(8, -pPleural * 0.6))} 98 ${106 - Math.min(24, hFluid * 2.5)} L 98 106 Q 58 ${106 + Math.max(-6, Math.min(8, -pPleural * 0.6))} 22 106 Z`} fill="#b45309" fillOpacity="0.45" />
-          )}
 
           {/* Triangle of Safety Interactive Hotspot */}
           <g
@@ -963,12 +1000,28 @@ const IcdBottleSvg = ({
             <text x="74" y="60" textAnchor="middle" fontSize="5.5" fontWeight="800" fill="#0891b2">Safe Zone</text>
           </g>
 
-          {/* Animated Living Lung */}
-          <g transform={`translate(52, 70) scale(${lungScale})`}>
-            <path d="M -2 -32 C -20 -30 -28 -6 -26 24 C -24 30 -6 30 -2 24 Z" fill="#fda4af" stroke="#e11d48" strokeWidth="1.2" />
-            <path d="M 2 -32 C 20 -30 28 -6 26 24 C 24 30 6 30 2 24 Z" fill="#fda4af" stroke="#e11d48" strokeWidth="1.2" />
-            {/* Bronchial Tree Branches */}
-            <path d="M 0 -18 L -8 -4 M 0 -18 L 8 -4 M -8 -4 L -14 10 M 8 -4 L 14 10" stroke="#e11d48" strokeWidth="0.8" opacity="0.6" strokeLinecap="round" />
+          {/* Animated Living Lung: one lobed lung with fissures, hilum and bronchi; shrinks toward the hilum when collapsed */}
+          <g clipPath="url(#icd-cavity-clip)"><g transform={`translate(52, 66) scale(${lungScale * 1.1})`}>
+            {/* Left lung, pleural surface: apex, cardiac notch with lingula, one oblique fissure (anatomical left lung) */}
+            <path d={LUNG} fill="url(#icd-lung-grad)" stroke={dark ? '#e8a79a' : '#a8564f'} strokeWidth="0.9" strokeLinejoin="round" />
+            <g clipPath="url(#icd-lung-clip)">
+              {/* Shaded medial surface facing the mediastinum */}
+              <path d="M -24 -16 C -24 -2 -22 8 -18 12 C -14 14 -10 15 -4.5 17 C -9 11 -15 3 -17 -7 C -18 -15 -19 -24 -19 -31 C -22 -26 -24 -22 -24 -16 Z" fill="#6b2f3a" fillOpacity={dark ? 0.5 : 0.38} />
+              {/* Interlobular septa: the polygonal lobule pattern on the visceral pleura */}
+              <g fill="none" stroke={dark ? '#a5b4fc' : '#5b6aa8'} strokeOpacity="0.55" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M -14 -28 L -8 -22 L -12 -15 L -6 -9 L -12 -2 L -5 4 L -10 10" />
+                <path d="M -8 -22 L 0 -26 L 6 -20 L 2 -12 L 8 -6 L 2 0 L 8 8 L 3 15" />
+                <path d="M 6 -20 L 14 -16 L 10 -8 L 18 -2 L 12 6 L 18 14" />
+                <path d="M -6 -9 L 2 -12 M -5 4 L 2 0 M 8 -6 L 12 6 M -10 10 L -3 14 L 3 15 L 2 22" />
+                <path d="M 14 -16 L 18 -24 M 18 -2 L 24 4 M 12 6 L 8 12" />
+              </g>
+              {/* Oblique fissure separating the upper lobe (with lingula) from the lower lobe */}
+              <path d="M 23 -8 C 16 2 12 14 3 26" fill="none" stroke="#7f1d1d" strokeOpacity="0.65" strokeWidth="1" strokeLinecap="round" />
+              <path d="M 24 -8 C 17 2 13 14 4 26" fill="none" stroke="#ffffff" strokeOpacity={dark ? 0.12 : 0.4} strokeWidth="0.5" strokeLinecap="round" />
+              {/* Soft highlight on the visceral pleura */}
+              <ellipse cx="-6" cy="-12" rx="7" ry="12" fill="#ffffff" fillOpacity={dark ? 0.07 : 0.3} transform="rotate(12 -6 -12)" />
+            </g>
+          </g>
           </g>
 
           {/* Rib 4 Cross-Section + Neurovascular Bundle (VAN) Interactive Hotspot */}

@@ -1,8 +1,28 @@
 // Intercostal Drainage (ICD) Simulator — Clinical Data, Physics Presets, Troubleshooting & Bilingual Dictionary
 
-const APP_VERSION = 'v1.6.2';
+const APP_VERSION = 'v1.6.4';
 
 const CHANGELOG = [
+  {
+    version: 'v1.6.4',
+    date: '2026-11-16',
+    en: [
+      'Lung redrawn as the anatomical left lung from an anatomy reference: rounded apex, cardiac notch with lingula, single oblique fissure, shaded medial surface and the polygonal lobule pattern of the pleura, in specimen colours.',
+    ],
+    th: [
+      'วาดปอดใหม่เป็นปอดข้างซ้ายตามภาพกายวิภาคอ้างอิง: ปลายปอดโค้งมน รอยบุ๋มหัวใจพร้อมลิงกูลา รอยแยกเฉียงหนึ่งรอย ผิวด้านในเงาเข้ม และลายหลายเหลี่ยมของเยื่อหุ้มปอด ในสีเหมือนชิ้นงานจริง',
+    ],
+  },
+  {
+    version: 'v1.6.3',
+    date: '2026-11-16',
+    en: [
+      'More realistic chest panel: one lobed lung with fissures, hilum, bronchi and vessels; a lateral chest wall (skin, muscle, ribs); faint posterior ribs like a radiograph; a domed diaphragm that flattens on inspiration; effusion pooling on the diaphragm with a curved surface.',
+    ],
+    th: [
+      'ภาพช่องอกสมจริงขึ้น: ปอดหนึ่งข้างมีแฉกและรอยแยก ขั้วปอด หลอดลม และหลอดเลือด ผนังทรวงอกด้านข้าง (ผิวหนัง กล้ามเนื้อ ซี่โครง) ซี่โครงด้านหลังจาง ๆ แบบภาพเอกซเรย์ กะบังลมโค้งนูนที่แบนลงเมื่อหายใจเข้า และน้ำในช่องเยื่อหุ้มปอดสะสมบนกะบังลมพร้อมผิวน้ำโค้ง',
+    ],
+  },
   {
     version: 'v1.6.2',
     date: '2026-11-16',
